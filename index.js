@@ -25,7 +25,7 @@ const { File } = require('megajs');
 var { updateCMDStore, isbtnID, getCMDStore, getCmdForCmdId, connectdb, input, get, updb, updfb } = require("./lib/githubdb");
 const { mongodb_connection_start, start_numrep_process, upload_to_mongodb, get_data_from_mongodb, storenumrepdata, getstorednumrep } = require('./lib/nonbutton');
 
-const ownerNumber = ['94789123880'];
+const ownerNumber = ['94767054052'];
 
 //===================SESSION-AUTH============================
 if (!fs.existsSync(__dirname + '/session/creds.json')) {
@@ -84,7 +84,7 @@ async function connectToWA() {
             console.log('Bot connected to whatsapp ✅');
 
             let up = `*ASITHA-MD connected successful ✅`;
-            await conn.sendMessage(ownerNumber + "@s.whatsapp.net", { image: { url: `https://i.postimg.cc/zvpdnfsK/1727229710389.jpg` }, caption: up });
+            await conn.sendMessage(ownerNumber + "@s.whatsapp.net", { image: { url: `https://files.catbox.moe/th8rt3.jpg` }, caption: up });
         }
     });
 
