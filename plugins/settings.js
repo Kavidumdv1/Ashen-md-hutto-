@@ -1,65 +1,83 @@
-const config = require('../config')
-const { cmd, commands } = require('../command')
-const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, fetchJson } = require('../lib/functions')
-var { updateCMDStore, isbtnID, getCMDStore, getCmdForCmdId, connectdb, input, get, updb, updfb, storenumrepdata } = require("../lib/githubdb")
+const fs = require("fs");
+const path = require("path");
+const configPath = path.join(__dirname, "../config/settings.json");
 
-// ✅ desc2 define කරන එක
-let desc2 = "Bot settings command for owner only";
+// settings.json read function
+function readConfig() {
+    return JSON.parse(fs.readFileSync(configPath));
+}
 
-// Settings command
+// settings.json write function
+function writeConfig(newConfig) {
+    fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 2));
+    return true;
+}
+
+const { cmd } = require("../lib/cmd");
+
+// 🛡️ Settings Panel Command
 cmd({
     pattern: "settings",
     react: "🛡️",
     alias: ["setting", "botsetting"],
-    desc: desc2,
+    desc: "Bot settings panel (Owner only).",
     category: "owner",
-    use: '.settings',
+    use: ".settings",
     filename: __filename
 },
-async(conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply }) => {
+async (conn, mek, m, { from, q, isMe, reply }) => {
     try {
-        if (!isMe) return await reply("Owner only")
-        if (!q) return reply("Please give me text")
-        
-        let numrep = []
-        let pakaya = `1.1 SET PREFIX`
-        numrep.push(`1.1 ${config.prefix || '.'}prefix ${q}`)  // prefix define කරලා නැත්තම් default '.'
+        if (!isMe) return await reply("⚠️ *Owner only!*");
 
-        const mass = await conn.sendMessage(from, { 
-            image: { url: `https://i.postimg.cc/zvpdnfsK/1727229710389.jpg` }, 
-            caption: `${pakaya}\n\n` 
+        let config = readConfig();
+
+        let msg = `
+*🤖 ${config.BOT_NAME} - SETTINGS PANEL 🤖*
+
+╭──「 *Current Settings* 」
+│◈ Prefix: ${config.PREFIX}
+│◈ Owner: ${config.OWNER_NAME}
+│◈ Number: ${config.OWNER_NUMBER}
+│◈ Footer: ${config.FOOTER}
+│◈ Auto React: ${config.AUTO_REACT}
+│◈ Anti Delete: ${config.ANTI_DELETE}
+│◈ Welcome: ${config.WELCOME_MESSAGE}
+│◈ Goodbye: ${config.GOODBYE_MESSAGE}
+╰───────────────●●►
+`;
+
+        await conn.sendMessage(from, {
+            image: { url: config.IMAGE_URL },
+            caption: msg
         }, { quoted: mek });
 
-        const jsonmsg = {
-            key: mass.key,
-            numrep,
-            method: 'decimal'
-        }
-        await storenumrepdata(jsonmsg)
-
     } catch (e) {
-        console.log(e)
-        reply(e)
+        console.log(e);
+        reply("❌ Error in settings command");
     }
-})
+});
 
-// Prefix update command
+// 📝 Update Prefix Command
 cmd({
     pattern: "prefix",
-    dontAddCommandList: true,
+    react: "🔑",
+    desc: "Change bot prefix (Owner only).",
+    category: "owner",
+    use: ".prefix <new_prefix>",
     filename: __filename
 },
-async(conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply }) => {
+async (conn, mek, m, { q, isMe, reply }) => {
     try {
-        if (!isMe) return await reply("Owner only")
-        let gett = await get("PREFIX")
-        if (gett === q) return await reply("Already Done")
-        await input("PREFIX", q)
+        if (!isMe) return await reply("⚠️ *Owner only!*");
+        if (!q) return reply("❌ Please provide a new prefix!");
 
-        await reply("*PREFIX updated: " + q + "*")
+        let config = readConfig();
+        config.PREFIX = q;
+        writeConfig(config);
 
+        reply(`✅ *Prefix updated to:* ${q}`);
     } catch (e) {
-        reply('*Error !!*')
-        l(e)
+        console.log(e);
+        reply("❌ Error updating prefix");
     }
-})
+});
